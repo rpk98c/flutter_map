@@ -305,7 +305,7 @@ class MapState {
       if (!options.slideOnBoundaries) {
         return false;
       }
-      center = options.containPoint(center, _lastCenter ?? center);
+      center = options.containPoint(bounds, center, _lastCenter ?? center);
     }
 
     _handleMoveEmit(center, zoom, hasGesture, source, id);

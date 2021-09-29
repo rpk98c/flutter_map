@@ -306,32 +306,68 @@ class MapOptions {
 
   //if there is a pan boundary, do not cross
   bool isOutOfBounds(LatLng? center) {
-    if (adaptiveBoundaries) {
-      return !_safeArea!.contains(center);
-    }
-    if (swPanBoundary != null && nePanBoundary != null) {
-      if (center == null) {
-        return true;
-      } else if (center.latitude < swPanBoundary!.latitude ||
-          center.latitude > nePanBoundary!.latitude) {
-        return true;
-      } else if (center.longitude < swPanBoundary!.longitude ||
-          center.longitude > nePanBoundary!.longitude) {
-        return true;
-      }
-    }
-    return false;
+    return true;
+    // if (adaptiveBoundaries) {
+    //   return !_safeArea!.contains(center);
+    // }
+    // if (swPanBoundary != null && nePanBoundary != null) {
+    //   if (center == null) {
+    //     return true;
+    //   } else if (center.latitude < swPanBoundary!.latitude ||
+    //       center.latitude > nePanBoundary!.latitude) {
+    //     return true;
+    //   } else if (center.longitude < swPanBoundary!.longitude ||
+    //       center.longitude > nePanBoundary!.longitude) {
+    //     return true;
+    //   }
+    // }
+    // return false;
   }
 
-  LatLng containPoint(LatLng point, LatLng fallback) {
+  LatLng containPoint(LatLngBounds bounds, LatLng point, LatLng fallback) {
+    print('contain pt');
     if (adaptiveBoundaries) {
       return _safeArea!.containPoint(point, fallback);
     } else {
-      return LatLng(
-        point.latitude.clamp(swPanBoundary!.latitude, nePanBoundary!.latitude),
-        point.longitude
-            .clamp(swPanBoundary!.longitude, nePanBoundary!.longitude),
-      );
+      // Latitude (y) bounds checks
+      final bounsdsHeight =
+          bounds.northEast!.latitude - bounds.southEast.latitude;
+      final latitude = point.latitude;
+      if (bounsdsHeight <= nePanBoundary!.latitude - swPanBoundary!.latitude) {
+        // ensure bounds are contained vertically
+        if (latitude + (bounsdsHeight / 2) > nePanBoundary!.latitude) {
+          point.latitude = (bounsdsHeight / 2) * -1;
+        }
+
+        if (latitude + ((bounsdsHeight / 2) * -1) < swPanBoundary!.latitude) {
+          point.latitude = swPanBoundary!.latitude - ((bounsdsHeight / 2) * -1);
+        }
+      } else {
+        // if we can see the entire bounds then we force center to the bounds center
+        point.latitude =
+            (nePanBoundary!.latitude + swPanBoundary!.latitude) / 2;
+      }
+
+      // Longitude (x) bounds checks
+      final bounsdsWidth =
+          bounds.northWest.longitude - bounds.northEast!.longitude;
+
+      final longitude = point.longitude;
+      if (bounsdsWidth >= swPanBoundary!.longitude - nePanBoundary!.longitude) {
+        // ensure bounds are contained horizontally
+        if (longitude + (bounsdsWidth / 2) < swPanBoundary!.longitude) {
+          point.longitude = (bounsdsWidth / 2) * -1;
+        }
+
+        if (longitude - (bounsdsWidth / 2) > nePanBoundary!.longitude) {
+          point.longitude = nePanBoundary!.longitude + (bounsdsWidth / 2);
+        }
+      } else {
+        // if we can see the entire bounds then we force center to the bounds center
+        point.longitude =
+            (swPanBoundary!.longitude + nePanBoundary!.longitude) / 2;
+      }
+      return LatLng(point.latitude, point.longitude);
     }
   }
 
