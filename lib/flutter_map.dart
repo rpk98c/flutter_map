@@ -324,8 +324,7 @@ class MapOptions {
     // return false;
   }
 
-  LatLng containPoint(LatLngBounds bounds, LatLng point, LatLng fallback) {
-    print('contain pt');
+  LatLng containPoint(LatLngBounds bounds, LatLng point, LatLng fallback) {    
     if (adaptiveBoundaries) {
       return _safeArea!.containPoint(point, fallback);
     } else {
