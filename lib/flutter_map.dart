@@ -324,13 +324,15 @@ class MapOptions {
     // return false;
   }
 
-  LatLng containPoint(LatLngBounds bounds, LatLng point, LatLng fallback) {    
+  LatLng containPoint(
+      LatLngBounds bounds, LatLng point, LatLng fallback, double zoomScale) {
     if (adaptiveBoundaries) {
       return _safeArea!.containPoint(point, fallback);
     } else {
       // Latitude (y) bounds checks
       final bounsdsHeight =
-          bounds.northEast!.latitude - bounds.southEast.latitude;
+          (bounds.northEast!.latitude - bounds.southEast.latitude) / zoomScale;
+
       final latitude = point.latitude;
       if (bounsdsHeight <= nePanBoundary!.latitude - swPanBoundary!.latitude) {
         // ensure bounds are contained vertically
@@ -349,7 +351,8 @@ class MapOptions {
 
       // Longitude (x) bounds checks
       final bounsdsWidth =
-          bounds.northWest.longitude - bounds.northEast!.longitude;
+          (bounds.northWest.longitude - bounds.northEast!.longitude) /
+              zoomScale;
 
       final longitude = point.longitude;
       if (bounsdsWidth >= swPanBoundary!.longitude - nePanBoundary!.longitude) {

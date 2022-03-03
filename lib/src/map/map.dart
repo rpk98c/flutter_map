@@ -295,6 +295,14 @@ class MapState {
       required MapEventSource source,
       String? id}) {
     zoom = fitZoomToBounds(zoom);
+    var zoomScale = 1.0;
+
+    // if this move is going to change the zoom level get the change ratio
+    // to help when we bounds check the new center. Else, containPoint
+    // will use the old bounds and get it wrong.
+    if (zoom != _zoom) {
+      zoomScale = getZoomScale(zoom, _zoom);
+    }
     final mapMoved = center != _lastCenter || zoom != _zoom;
 
     if (_lastCenter != null && (!mapMoved || !bounds.isValid)) {
@@ -305,7 +313,8 @@ class MapState {
       if (!options.slideOnBoundaries) {
         return false;
       }
-      center = options.containPoint(bounds, center, _lastCenter ?? center);
+      center = options.containPoint(
+          bounds, center, _lastCenter ?? center, zoomScale);
     }
 
     _handleMoveEmit(center, zoom, hasGesture, source, id);
