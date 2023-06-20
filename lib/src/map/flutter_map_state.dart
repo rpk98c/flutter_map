@@ -652,31 +652,72 @@ class FlutterMapState extends MapGestureMixin
 
   //if there is a pan boundary, do not cross
   bool isOutOfBounds(LatLng center) {
-    if (options.adaptiveBoundaries) {
-      return !_safeArea!.contains(center);
-    }
-    if (options.swPanBoundary != null && options.nePanBoundary != null) {
-      if (center.latitude < options.swPanBoundary!.latitude ||
-          center.latitude > options.nePanBoundary!.latitude) {
-        return true;
-      } else if (center.longitude < options.swPanBoundary!.longitude ||
-          center.longitude > options.nePanBoundary!.longitude) {
-        return true;
-      }
-    }
-    return false;
+    // if (options.adaptiveBoundaries) {
+    //   return !_safeArea!.contains(center);
+    // }
+    // if (options.swPanBoundary != null && options.nePanBoundary != null) {
+    //   if (center.latitude < options.swPanBoundary!.latitude ||
+    //       center.latitude > options.nePanBoundary!.latitude) {
+    //     return true;
+    //   } else if (center.longitude < options.swPanBoundary!.longitude ||
+    //       center.longitude > options.nePanBoundary!.longitude) {
+    //     return true;
+    //   }
+    // }
+    // return false;
+    return true;
   }
 
   LatLng containPoint(LatLng point, LatLng fallback) {
     if (options.adaptiveBoundaries) {
       return _safeArea!.containPoint(point, fallback);
     } else {
-      return LatLng(
-        point.latitude.clamp(
-            options.swPanBoundary!.latitude, options.nePanBoundary!.latitude),
-        point.longitude.clamp(
-            options.swPanBoundary!.longitude, options.nePanBoundary!.longitude),
-      );
+      // Latitude (y) bounds checks
+      final bounsdsHeight =
+          bounds.northEast.latitude - bounds.southEast.latitude;
+      final latitude = point.latitude;
+      if (bounsdsHeight <=
+          options.nePanBoundary!.latitude - options.swPanBoundary!.latitude) {
+        // ensure bounds are contained vertically
+        if (latitude + (bounsdsHeight / 2) > options.nePanBoundary!.latitude) {
+          point.latitude = (bounsdsHeight / 2) * -1;
+        }
+
+        if (latitude + ((bounsdsHeight / 2) * -1) <
+            options.swPanBoundary!.latitude) {
+          point.latitude =
+              options.swPanBoundary!.latitude - ((bounsdsHeight / 2) * -1);
+        }
+      } else {
+        // if we can see the entire bounds then we force center to the bounds center
+        point.latitude = (options.nePanBoundary!.latitude +
+                options.swPanBoundary!.latitude) /
+            2;
+      }
+
+      // Longitude (x) bounds checks
+      final bounsdsWidth =
+          bounds.northWest.longitude - bounds.northEast!.longitude;
+
+      final longitude = point.longitude;
+      if (bounsdsWidth >=
+          options.swPanBoundary!.longitude - options.nePanBoundary!.longitude) {
+        // ensure bounds are contained horizontally
+        if (longitude + (bounsdsWidth / 2) < options.swPanBoundary!.longitude) {
+          point.longitude = (bounsdsWidth / 2) * -1;
+        }
+
+        if (longitude - (bounsdsWidth / 2) > options.nePanBoundary!.longitude) {
+          point.longitude =
+              options.nePanBoundary!.longitude + (bounsdsWidth / 2);
+        }
+      } else {
+        // if we can see the entire bounds then we force center to the bounds center
+        point.longitude = (options.swPanBoundary!.longitude +
+                options.nePanBoundary!.longitude) /
+            2;
+      }
+      return LatLng(point.latitude, point.longitude);
     }
   }
 

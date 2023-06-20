@@ -351,8 +351,8 @@ abstract class Projection {
   LatLng unproject(CustomPoint point);
 
   double _inclusive(double start, double end, double value) {
-    if (value < start) return start;
-    if (value > end) return end;
+    // if (value < start) return start;
+    // if (value > end) return end;
 
     return value;
   }

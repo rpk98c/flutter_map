@@ -16,7 +16,11 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^0.13.5
-  latlong2: ^0.8.0
+  latlong2:
+  # path: ../dart-latlong
+    git:
+      url: git@github.com:rpk98c/dart-latlong.git
+      ref: v1.0.0
   meta: ^1.8.0
   polylabel: ^1.0.1
   proj4dart: ^2.1.0
